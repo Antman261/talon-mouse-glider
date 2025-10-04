@@ -1,9 +1,7 @@
-# Talon Mouse Glider: Scroll by moving the pointer!
+# Talon Mouse Glider: Scroll by moving the pointer
 
-Talon Mouse Glider allows you to scroll by uttering "mouse glide" and then moving the mouse pointer. It even adds scrolling inertia for a scrolling experience similar to scrolling gestures in macos!
-
-## Installation
-
+Talon Mouse Glider allows you to scroll by uttering "mouse glide" and then moving the mouse pointer. It also adds scrolling inertia for a scrolling experience similar to scrolling gestures in macos!
+p
 ### MacOS & Linux
 
 ```
@@ -19,9 +17,9 @@ git clone https://github.com/antman261/talon-mouse-glider.git mouse-glider
 
 ## Usage
 
-1. Utter `mouse glide` or `glider` to activate mouse gliding.
+1. Utter `mouse glide` or `glider` to activate mouse gliding
 2. Use your pointing device (trackpad, mouse, etc) to scroll
-3. Utter `glide stop` or `glider` to deactivate mouse gliding and return to moving the pointer.
+3. Utter `glide stop` or `glider` to deactivate mouse gliding and return to moving the pointer
 
 ## Possible Features & Improvements
 
