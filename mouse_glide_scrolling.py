@@ -33,21 +33,31 @@ def gui_wheel(gui: imgui.GUI):
         actions.user.mouse_glide_stop()
 
 
-def scroll_glide_helper():
+def scroll_glide_helper(horizontal: bool, vertical:bool):
     global delta_y_previous, delta_x_previous, has_stopped
     current_x, current_y = ctrl.mouse_pos()
     previous_x, previous_y = get_position()
-    delta_y_accel = calc_accel(*calc_vector(current_y, previous_y))
-    delta_x_accel = calc_accel(*calc_vector(current_x, previous_x))
-    buffer(delta_x_accel, delta_y_accel)
+    delta_y_accel, delta_x_accel = (0, 0)
+    if vertical:
+        delta_y_accel = calc_accel(*calc_vector(current_y, previous_y))
+    if horizontal:
+        delta_x_accel = calc_accel(*calc_vector(current_x, previous_x))
     has_stopped = delta_x_accel == 0 and delta_y_accel == 0
     set_previous_delta()
+    buffer(delta_x_accel, delta_y_accel)
     delta_y_inertia = delta_y_previous if has_stopped else 0.0
     delta_x_inertia = delta_x_previous if has_stopped else 0.0
-    actions.mouse_scroll(
-        delta_y_accel + delta_y_inertia, delta_x_accel + delta_x_inertia
-    )
-    actions.mouse_move(previous_x, previous_y)
+    if horizontal and vertical:
+        actions.mouse_scroll(delta_y_accel+delta_y_inertia,delta_x_accel+delta_x_inertia)
+        actions.mouse_move(previous_x, previous_y)
+        return
+    if horizontal:
+        actions.mouse_scroll(x=delta_x_accel+delta_x_inertia)
+        actions.mouse_move(previous_x, current_y)
+    if vertical:
+        actions.mouse_scroll(y=delta_y_accel+delta_y_inertia)
+        actions.mouse_move(current_x, previous_y)
+        
 
 
 def set_previous_delta():
@@ -120,18 +130,18 @@ def restore_tracking_state():
 
 @mod.action_class
 class Actions:
-    def mouse_glide_toggle():
+    def mouse_glide_toggle(horizontal: bool = True, vertical: bool = True):
         """Toggle mouse glide scrolling"""
         if scroll_job is not None:
             return actions.user.mouse_glide_stop()
-        actions.user.mouse_glide_start()
+        actions.user.mouse_glide_start(horizontal, vertical)
 
-    def mouse_glide_start():
+    def mouse_glide_start(horizontal: bool = True, vertical: bool = True):
         """begin mouse glide scrolling"""
         global scroll_job
         if scroll_job is None:
             save_tracking_state()
-            scroll_job = cron.interval("16ms", scroll_glide_helper)
+            scroll_job = cron.interval("16ms", lambda: scroll_glide_helper(horizontal, vertical))
             initialize_position()
             ctx.tags = ["user.mouse_glide_active"]
             if settings.get("user.mouse_glide_show_cursor_on_start"):

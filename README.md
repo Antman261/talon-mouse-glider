@@ -21,7 +21,4 @@ git clone https://github.com/antman261/talon-mouse-glider.git mouse-glider
 2. Use your pointing device (trackpad, mouse, etc) to scroll
 3. Utter `glide stop` or `glider` to deactivate mouse gliding and return to moving the pointer
 
-## Possible Features & Improvements
-
-* Vertical-only glide mode
-* Horizontal-only glide mode
+To scroll in only one dimension, utter `glide vertical` or `glide horizontal`
