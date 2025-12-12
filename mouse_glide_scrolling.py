@@ -8,6 +8,10 @@ mod.tag(
     "mouse_glide_active",
     desc="commands for stopping mouse glide",
 )
+mod.setting("mouse_glide_hide_cursor_on_stop", type=bool, default=False, desc="Enable to hide the cursor when stopping mouse glide")
+mod.setting("mouse_glide_show_cursor_on_start", type=bool, default=False, desc="Enable to show the cursor when starting mouse glide")
+mod.setting("mouse_glide_restore_tracking_state_on_stop", type=bool, default=True, desc="Enable to restore eye-tracking state when stopping mouse glide")
+
 
 ctx = Context()
 
@@ -23,7 +27,7 @@ inertia_buffer_y = deque(maxlen=10)
 
 @imgui.open(x=700, y=0)
 def gui_wheel(gui: imgui.GUI):
-    gui.text(f"Scroll mode: Mouse Glide")
+    gui.text("Scroll mode: Mouse Glide")
     gui.line()
     if gui.button("Glide Stop [stop scrolling]"):
         actions.user.mouse_glide_stop()
@@ -118,21 +122,22 @@ def restore_tracking_state():
 class Actions:
     def mouse_glide_toggle():
         """Toggle mouse glide scrolling"""
-        if scroll_job != None:
+        if scroll_job is not None:
             return actions.user.mouse_glide_stop()
         actions.user.mouse_glide_start()
 
     def mouse_glide_start():
         """begin mouse glide scrolling"""
         global scroll_job
-        if scroll_job != None:
-            return
-        save_tracking_state()
-        scroll_job = cron.interval("16ms", scroll_glide_helper)
-        initialize_position()
-        ctx.tags = ["user.mouse_glide_active"]
-        if not settings.get("user.mouse_hide_mouse_gui"):
-            gui_wheel.show()
+        if scroll_job is None:
+            save_tracking_state()
+            scroll_job = cron.interval("16ms", scroll_glide_helper)
+            initialize_position()
+            ctx.tags = ["user.mouse_glide_active"]
+            if settings.get("user.mouse_glide_show_cursor_on_start"):
+                actions.user.mouse_cursor_show()
+            if not settings.get("user.mouse_hide_mouse_gui"):
+                gui_wheel.show()
 
     def mouse_glide_stop():
         """stop mouse glide scrolling"""
@@ -141,4 +146,8 @@ class Actions:
         scroll_job = None
         gui_wheel.hide()
         ctx.tags = []
-        restore_tracking_state()
+        if settings.get("user.mouse_glide_hide_cursor_on_stop"):
+            actions.user.mouse_cursor_hide()
+        if settings.get("user.mouse_glide_restore_tracking_state_on_stop"):
+            restore_tracking_state()
+        
