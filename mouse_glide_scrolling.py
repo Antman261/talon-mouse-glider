@@ -8,9 +8,24 @@ mod.tag(
     "mouse_glide_active",
     desc="commands for stopping mouse glide",
 )
-mod.setting("mouse_glide_hide_cursor_on_stop", type=bool, default=False, desc="Enable to hide the cursor when stopping mouse glide")
-mod.setting("mouse_glide_show_cursor_on_start", type=bool, default=False, desc="Enable to show the cursor when starting mouse glide")
-mod.setting("mouse_glide_restore_tracking_state_on_stop", type=bool, default=True, desc="Enable to restore eye-tracking state when stopping mouse glide")
+mod.setting(
+    "mouse_glide_hide_cursor_on_stop",
+    type=bool,
+    default=False,
+    desc="Enable to hide the cursor when stopping mouse glide",
+)
+mod.setting(
+    "mouse_glide_show_cursor_on_start",
+    type=bool,
+    default=False,
+    desc="Enable to show the cursor when starting mouse glide",
+)
+mod.setting(
+    "mouse_glide_restore_tracking_state_on_stop",
+    type=bool,
+    default=True,
+    desc="Enable to restore eye-tracking state when stopping mouse glide",
+)
 
 
 ctx = Context()
@@ -33,7 +48,7 @@ def gui_wheel(gui: imgui.GUI):
         actions.user.mouse_glide_stop()
 
 
-def scroll_glide_helper(horizontal: bool, vertical:bool):
+def scroll_glide_helper(horizontal: bool, vertical: bool):
     global delta_y_previous, delta_x_previous, has_stopped
     current_x, current_y = ctrl.mouse_pos()
     previous_x, previous_y = get_position()
@@ -48,16 +63,17 @@ def scroll_glide_helper(horizontal: bool, vertical:bool):
     delta_y_inertia = delta_y_previous if has_stopped else 0.0
     delta_x_inertia = delta_x_previous if has_stopped else 0.0
     if horizontal and vertical:
-        actions.mouse_scroll(delta_y_accel+delta_y_inertia,delta_x_accel+delta_x_inertia)
+        actions.mouse_scroll(
+            delta_y_accel + delta_y_inertia, delta_x_accel + delta_x_inertia
+        )
         actions.mouse_move(previous_x, previous_y)
         return
     if horizontal:
-        actions.mouse_scroll(x=delta_x_accel+delta_x_inertia)
+        actions.mouse_scroll(x=delta_x_accel + delta_x_inertia)
         actions.mouse_move(previous_x, current_y)
     if vertical:
-        actions.mouse_scroll(y=delta_y_accel+delta_y_inertia)
+        actions.mouse_scroll(y=delta_y_accel + delta_y_inertia)
         actions.mouse_move(current_x, previous_y)
-        
 
 
 def set_previous_delta():
@@ -130,6 +146,10 @@ def restore_tracking_state():
 
 @mod.action_class
 class Actions:
+    def is_mouse_glide_active():
+        """Returns whether mouse glide is active"""
+        return scroll_job is not None
+
     def mouse_glide_toggle(horizontal: bool = True, vertical: bool = True):
         """Toggle mouse glide scrolling"""
         if scroll_job is not None:
@@ -141,7 +161,9 @@ class Actions:
         global scroll_job
         if scroll_job is None:
             save_tracking_state()
-            scroll_job = cron.interval("16ms", lambda: scroll_glide_helper(horizontal, vertical))
+            scroll_job = cron.interval(
+                "16ms", lambda: scroll_glide_helper(horizontal, vertical)
+            )
             initialize_position()
             ctx.tags = ["user.mouse_glide_active"]
             if settings.get("user.mouse_glide_show_cursor_on_start"):
@@ -160,4 +182,3 @@ class Actions:
             actions.user.mouse_cursor_hide()
         if settings.get("user.mouse_glide_restore_tracking_state_on_stop"):
             restore_tracking_state()
-        
